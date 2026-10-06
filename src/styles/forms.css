@@ -1,0 +1,278 @@
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.form-card {
+  padding: var(--space-lg);
+}
+
+.form-card__title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.form-grid__full {
+  grid-column: 1 / -1;
+}
+
+@container (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.form-field__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.form-field__hint,
+.form-field__error {
+  font-size: var(--text-xs);
+}
+
+.form-field__hint {
+  color: var(--text-secondary);
+}
+
+.form-field__error {
+  color: var(--error-text);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+textarea.input {
+  min-height: 0;
+  padding: var(--space-sm) var(--space-3);
+  resize: vertical;
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--error);
+}
+
+.check-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.check-group legend {
+  padding: 0;
+  margin-bottom: var(--space-sm);
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-sm);
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  /* The whole row is the click target: 32px with a mouse, the larger touch size on touch screens. */
+  min-height: max(32px, var(--control-height-sm));
+  cursor: pointer;
+}
+
+.check-item input {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.upload-button {
+  /* The hidden file input is positioned against this button. Without it, the input is positioned against the
+     whole dialog, and focusing it after a file is chosen scrolls the dialog's contents out of view. */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  align-self: flex-start;
+  min-height: var(--control-height);
+  padding: 0 var(--space-md);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.upload-button:hover,
+.upload-button:focus-within {
+  background: var(--soft);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.image-grid {
+  list-style: none;
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-sm);
+}
+
+.image-grid__item {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.image-grid__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-grid__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--overlay-strong);
+  color: var(--on-error);
+  cursor: pointer;
+}
+
+.picker-hint {
+  margin-bottom: var(--space-sm);
+}
+
+.picker-map {
+  position: relative;
+  height: 340px;
+}
+
+.picker-map .map-view {
+  position: absolute;
+  inset: 0;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: var(--space-sm);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+/* Input with buttons beside it, e.g. password show/generate */
+.input-group {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.input-group .input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* "Type X to confirm" field in a confirmation dialog */
+.confirm-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  font-size: var(--text-sm);
+}
+
+/* Settings page */
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+.form-card__desc {
+  margin: calc(var(--space-sm) * -1) 0 var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.form-actions__status {
+  margin-right: auto;
+  align-self: center;
+  font-size: var(--text-sm);
+  color: var(--primary);
+}
+
+.input[readonly] {
+  background: var(--soft);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+/* Live new-password requirements */
+.pw-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.pw-rules li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pw-rules li svg {
+  flex: none;
+  width: 14px;
+}
+
+.pw-rules li.is-ok {
+  color: var(--success-text);
+}

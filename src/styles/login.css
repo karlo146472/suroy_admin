@@ -1,0 +1,121 @@
+/* Sign-in page: full screen, no dashboard chrome */
+.login {
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  background: var(--bg);
+}
+
+.login__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-xxl);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.login__logo {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-md);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--on-primary) 18%, transparent);
+}
+
+.login__logo--small {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.login__brand-name {
+  font-size: var(--text-display);
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+}
+
+.login__brand-sub {
+  margin-top: var(--space-xs);
+  font-size: var(--text-md);
+}
+
+.login__tagline {
+  margin-top: var(--space-xl);
+  max-width: 340px;
+  font-size: var(--text-lg);
+  line-height: 1.5;
+}
+
+.login__panel {
+  display: grid;
+  place-items: center;
+  padding: var(--space-lg);
+}
+
+.login__card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-xl);
+  box-shadow: var(--shadow);
+}
+
+.login__mobile-brand {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-lg);
+  color: var(--primary);
+}
+
+.login__title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+
+.login__subtitle {
+  margin: var(--space-xs) 0 var(--space-lg);
+  color: var(--text-secondary);
+}
+
+.login .form-stack {
+  gap: var(--space-md);
+}
+
+.login__help,
+.login__demo {
+  margin-top: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.login__demo {
+  padding: var(--space-sm) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+}
+
+
+/* Narrow screens: drop the brand panel and show a small brand line above the form */
+@media (max-width: 900px) {
+  .login {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login__brand {
+    display: none;
+  }
+
+  .login__mobile-brand {
+    display: flex;
+  }
+
+  .login__card {
+    padding: var(--space-lg);
+  }
+}

@@ -1,0 +1,55 @@
+@import './styles/theme.css';
+@import './styles/layout.css';
+@import './styles/ui.css';
+@import './styles/forms.css';
+@import './styles/login.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--primary);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* One keyboard focus ring for everything focusable. Zero specificity, so a component can override it. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Placeholder text must meet the same contrast as other small text. */
+::placeholder {
+  color: var(--text-secondary);
+  opacity: 1;
+}

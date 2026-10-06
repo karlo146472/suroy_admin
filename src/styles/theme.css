@@ -1,0 +1,97 @@
+/* SUROY design tokens, mirrored from practice_app/constants/theme.ts */
+:root {
+  /* Brand colors */
+  --primary: #2e7d32;
+  --secondary: #66bb6a;
+  --soft: #e8f5e9;
+  --accent: #ffb300;
+  --bg: #f8f9fa;
+  --text: #212121;
+  /* Was #757575; a touch darker so small grey text reaches 4.5:1 on the page background and green tints. */
+  --text-secondary: #666666;
+  --surface: #ffffff;
+  --error: #d32f2f;
+  --border: #dfe8df;
+  --on-primary: #ffffff;
+
+  /* Supporting colors, used for badges and notices (not part of the mobile palette) */
+  --info: #1565c0;
+  /* Text colours for badges and messages on tinted backgrounds (the plain brand colours fall just short of 4.5:1 there). */
+  --success-text: #1b5e20;
+  --error-text: #b71c1c;
+  --warning-text: #8a6100;
+  --on-error: #ffffff;
+  --on-accent: #212121;
+  --overlay: rgba(0, 0, 0, 0.45);
+  --overlay-strong: rgba(0, 0, 0, 0.6);
+
+  /* Spacing scale: the mobile app's 4/8/16/24/32/48, plus a 12px half-step for dense rows and controls */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-3: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* Corner radii: controls use sm, cards and modals use the default, big brand elements use lg */
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Type scale */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-display: 40px;
+
+  /* Controls (buttons, inputs, selects, search) share one height */
+  --control-height: 38px;
+  --control-height-sm: 30px;
+
+  /* The brand green darkened a little for the sidebar; follows --primary in light and dark mode. */
+  --sidebar-bg: color-mix(in srgb, var(--primary) 78%, black);
+  --sidebar-width: 248px;
+  --header-height: 64px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.25);
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #81c784;
+    --secondary: #66bb6a;
+    --soft: #1e2b1c;
+    --accent: #ffca28;
+    --bg: #121b12;
+    --text: #ecedee;
+    --text-secondary: #9ba99b;
+    --surface: #1c261a;
+    --error: #ef5350;
+    --border: #2a382a;
+    --on-primary: #10200f;
+
+    --info: #64b5f6;
+    --success-text: #81c784;
+    --error-text: #ff8a80;
+    /* White on the lighter dark-mode red is only 3.5:1, so solid red buttons use dark text there. */
+    --on-error: #1a0a0a;
+    --warning-text: #ffca28;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Touch screens: larger controls, so taps land reliably. Everything sized with these tokens grows together. */
+@media (pointer: coarse) {
+  :root {
+    --control-height: 44px;
+    --control-height-sm: 40px;
+  }
+}
