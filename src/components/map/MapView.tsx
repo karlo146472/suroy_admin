@@ -1,6 +1,14 @@
 import * as maplibregl from 'maplibre-gl'
+// Vite bundles the worker as its own file and gives back its URL (the "?worker&url" part).
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useEffect, useRef } from 'react'
+
+// MapLibre draws every tile in a background worker and, by default, looks for that worker file next to its own
+// code. In the production build the library is folded into another file, so that guess points at a file that does
+// not exist (on Vercel it returns the app's HTML page), the worker never starts, and the map stays white with only
+// the pins. Naming the bundled worker explicitly fixes that. It works in `npm run dev` too.
+maplibregl.setWorkerUrl(workerUrl)
 
 export interface MapMarker {
   id: string | number
