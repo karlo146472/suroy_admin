@@ -1,13 +1,16 @@
-import { ImagePlus, X } from 'lucide-react'
+import { ImagePlus, Plus, X } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { SANTO_TOMAS_CENTER } from '../../lib/mapDefaults'
 import {
+  EXPENSE_TYPES,
+  PRICED_ON_SITE_CATEGORIES,
   ALLOWED_IMAGE_TYPES,
   MAX_IMAGE_BYTES,
   STATUS_OPTIONS,
   validateDestination,
   type DestinationFormValues,
+  type ExpenseValues,
 } from '../../lib/destinationForm'
 import { FormField, LoadingState } from '../ui'
 
@@ -122,6 +125,8 @@ export default function DestinationForm({
 
   const set = <K extends keyof DestinationFormValues>(key: K, value: DestinationFormValues[K]) =>
     setValues((v) => ({ ...v, [key]: value }))
+  const setExpense = (index: number, patch: Partial<ExpenseValues>) =>
+    setValues((v) => ({ ...v, expenses: v.expenses.map((expense, i) => (i === index ? { ...expense, ...patch } : expense)) }))
   const markTouched = (key: keyof DestinationFormValues) => setTouched((t) => ({ ...t, [key]: true }))
   const errorFor = (key: keyof DestinationFormValues) => (submitted || touched[key] ? errors[key] : undefined)
 
@@ -266,6 +271,81 @@ export default function DestinationForm({
               {(c) => <input {...c} className="input" type="text" {...textProps('contact')} />}
             </FormField>
           </div>
+        </div>
+      </section>
+
+      <section className="form-card">
+        <h2 className="form-card__title">Costs at the place</h2>
+        <p className="form-card__desc">
+          What a visitor typically pays on site, per person. The app adds these to the entrance fee and the fare, so
+          travelers see the full cost. Meal is one typical meal, and Room is one night.
+        </p>
+        {PRICED_ON_SITE_CATEGORIES.includes(values.category) && values.expenses.length === 0 && (
+          <div className="notice notice--info" role="status">
+            Add a {values.category === 'Accommodation' ? 'Room' : 'Meal'} price. Until then this place stays out of
+            budget results, because its real cost is not known.
+          </div>
+        )}
+        {values.expenses.length > 0 && (
+          <div className="expense-list">
+            {values.expenses.map((expense, index) => (
+              <div key={index} className="expense-row">
+                <select
+                  className="input"
+                  aria-label={`Cost ${index + 1} type`}
+                  value={expense.type}
+                  onChange={(e) => setExpense(index, { type: e.target.value as ExpenseValues['type'] })}
+                >
+                  {EXPENSE_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className="input"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Amount (PHP)"
+                  aria-label={`Cost ${index + 1} amount in pesos`}
+                  value={expense.amount}
+                  onChange={(e) => setExpense(index, { amount: e.target.value })}
+                  onBlur={() => markTouched('expenses')}
+                />
+                <input
+                  className="input"
+                  type="text"
+                  maxLength={80}
+                  placeholder="Note, e.g. fan room"
+                  aria-label={`Cost ${index + 1} note`}
+                  value={expense.description}
+                  onChange={(e) => setExpense(index, { description: e.target.value })}
+                />
+                <button
+                  type="button"
+                  className="btn btn--small btn--danger-text"
+                  aria-label={`Remove cost ${index + 1}`}
+                  onClick={() => set('expenses', values.expenses.filter((_, i) => i !== index))}
+                >
+                  <X size={14} /> Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {errorFor('expenses') && (
+          <span className="form-field__error" role="alert">
+            {errorFor('expenses')}
+          </span>
+        )}
+        <div>
+          <button
+            type="button"
+            className="btn btn--small"
+            onClick={() => set('expenses', [...values.expenses, { type: 'Meal', amount: '', description: '' }])}
+          >
+            <Plus size={14} /> Add cost
+          </button>
         </div>
       </section>
 

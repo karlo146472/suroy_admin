@@ -123,11 +123,31 @@ textarea.input {
   color: var(--primary);
   font-weight: 500;
   cursor: pointer;
+  margin-top:10px
 }
 
 .upload-button:hover,
 .upload-button:focus-within {
   background: var(--soft);
+}
+
+/* One row in "Costs at the place": type, amount, note, remove. */
+.expense-list {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.expense-row {
+  display: grid;
+  grid-template-columns: 120px 140px minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+@container (max-width: 640px) {
+  .expense-row {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .visually-hidden {
@@ -213,6 +233,13 @@ textarea.input {
 .input-group .input {
   flex: 1;
   min-width: 0;
+}
+
+/* Edge and other Chromium browsers draw their own "show password" icon inside password inputs. The field already
+   has its own button beside it, so hide the browser's to avoid two eyes. */
+.input-group input::-ms-reveal,
+.input-group input::-ms-clear {
+  display: none;
 }
 
 /* "Type X to confirm" field in a confirmation dialog */

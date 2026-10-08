@@ -1,4 +1,4 @@
-import type { DestinationRecord, DestinationStatus } from './destinationTypes'
+import { EXPENSE_TYPES, type DestinationRecord, type DestinationStatus, type ExpenseType } from './destinationTypes'
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES } from './destinationImages'
 
 export const ACTIVITY_OPTIONS = [
@@ -27,6 +27,18 @@ export const STATUS_OPTIONS: DestinationStatus[] = ['Standard', 'Featured']
 
 export { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES }
 
+export { EXPENSE_TYPES }
+
+/** One cost row in the form. The amount is text while it is being typed. */
+export interface ExpenseValues {
+  type: ExpenseType
+  amount: string
+  description: string
+}
+
+/** Categories whose real cost is mostly a room or a meal, so they should have at least one cost row. */
+export const PRICED_ON_SITE_CATEGORIES = ['Accommodation', 'Food']
+
 export interface DestinationFormValues {
   name: string
   category: string
@@ -40,6 +52,8 @@ export interface DestinationFormValues {
   activities: string[]
   facilities: string[]
   status: DestinationStatus
+  /** Typical on-site costs per person (a meal, a room, an activity). */
+  expenses: ExpenseValues[]
   /** A photo chosen in this form, not yet uploaded. */
   image: File | null
   /** The destination's existing photo to keep; null when it has none or the admin removed it. */
@@ -61,6 +75,7 @@ export const emptyDestinationForm: DestinationFormValues = {
   activities: [],
   facilities: [],
   status: 'Standard',
+  expenses: [],
   image: null,
   imageUrl: null,
 }
@@ -80,6 +95,11 @@ export function valuesFromRecord(record: DestinationRecord): DestinationFormValu
     activities: record.activities ?? [],
     facilities: record.facilities ?? [],
     status: record.status,
+    expenses: (record.expenses ?? []).map((expense) => ({
+      type: expense.type,
+      amount: String(expense.amount),
+      description: expense.description,
+    })),
     image: null,
     imageUrl: record.imageUrl ?? null,
   }
@@ -100,6 +120,11 @@ export function recordFromValues(values: DestinationFormValues): Omit<Destinatio
     activities: values.activities,
     facilities: values.facilities,
     status: values.status,
+    expenses: values.expenses.map((expense) => ({
+      type: expense.type,
+      amount: Number(expense.amount),
+      description: expense.description.trim(),
+    })),
     imageUrl: values.imageUrl ?? undefined,
   }
 }
@@ -163,6 +188,22 @@ export function validateDestination(
     const digits = contact.replace(/\D/g, '').length
     const isPhone = PHONE_CHARS.test(contact) && digits >= 7 && digits <= 15
     if (!isPhone && !EMAIL.test(contact)) errors.contact = 'Enter a valid phone number or email address.'
+  }
+
+  for (const [index, expense] of values.expenses.entries()) {
+    const amount = parseNumber(expense.amount)
+    if (expense.amount.trim() === '' || Number.isNaN(amount) || amount <= 0) {
+      errors.expenses = `Cost ${index + 1}: enter an amount above 0, or remove the row.`
+      break
+    }
+    if (amount > 100000) {
+      errors.expenses = `Cost ${index + 1}: the amount looks too high.`
+      break
+    }
+    if (expense.description.trim().length > 80) {
+      errors.expenses = `Cost ${index + 1}: keep the note to 80 characters or fewer.`
+      break
+    }
   }
 
   if (values.image) {

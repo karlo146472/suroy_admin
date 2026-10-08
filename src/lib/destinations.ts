@@ -1,4 +1,4 @@
-import type { DestinationRecord } from './destinationTypes'
+import { EXPENSE_TYPES, type DestinationRecord, type ExpenseType } from './destinationTypes'
 import { removeDestinationImage, uploadDestinationImage } from './destinationImages'
 import { supabase } from './supabase'
 
@@ -20,6 +20,7 @@ interface DestinationRow {
   destination_categories: { categories: { category_name: string } | null }[]
   destination_activities: { activities: { activity_name: string } | null }[]
   destination_facilities: { facilities: { facility_name: string } | null }[]
+  destination_expenses: { expense_type: string | null; estimated_amount: string | number | null; description: string | null }[]
 }
 
 const isName = (name: string | undefined): name is string => Boolean(name)
@@ -38,6 +39,12 @@ function toRecord(row: DestinationRow): DestinationRecord {
     longitude: Number(row.longitude ?? 0),
     description: row.description ?? '',
     imageUrl: row.image_url ?? undefined,
+    expenses: row.destination_expenses.map((expense) => ({
+      // An unknown or missing type (for example one typed by hand in the database) is shown as "Other".
+      type: (EXPENSE_TYPES as readonly string[]).includes(expense.expense_type ?? '') ? (expense.expense_type as ExpenseType) : 'Other',
+      amount: Number(expense.estimated_amount ?? 0),
+      description: expense.description ?? '',
+    })),
     contactInformation: row.contact_information ?? undefined,
     activities: row.destination_activities.map((link) => link.activities?.activity_name).filter(isName),
     facilities: row.destination_facilities.map((link) => link.facilities?.facility_name).filter(isName),
@@ -52,7 +59,8 @@ export async function fetchDestinations(): Promise<DestinationRecord[]> {
        contact_information, latitude, longitude, featured, image_url,
        destination_categories ( categories ( category_name ) ),
        destination_activities ( activities ( activity_name ) ),
-       destination_facilities ( facilities ( facility_name ) )`,
+       destination_facilities ( facilities ( facility_name ) ),
+       destination_expenses ( expense_type, estimated_amount, description )`,
     )
     .order('destination_id', { ascending: false })
 
@@ -130,6 +138,23 @@ async function linkCategory(destinationId: number, categoryName: string) {
   if (linkError) throw linkError
 }
 
+/** Replaces the destination's recorded on-site costs with the given list. */
+async function linkExpenses(destinationId: number, expenses: DestinationInput['expenses']) {
+  const { error: clearError } = await supabase.from('destination_expenses').delete().eq('destination_id', destinationId)
+  if (clearError) throw clearError
+  if (!expenses || expenses.length === 0) return
+
+  const { error } = await supabase.from('destination_expenses').insert(
+    expenses.map((expense) => ({
+      destination_id: destinationId,
+      expense_type: expense.type,
+      estimated_amount: expense.amount,
+      description: expense.description || null,
+    })),
+  )
+  if (error) throw error
+}
+
 async function linkAll(destinationId: number, input: DestinationInput) {
   await linkCategory(destinationId, input.category)
   await linkNames(
@@ -144,6 +169,7 @@ async function linkAll(destinationId: number, input: DestinationInput) {
     destinationId,
     input.facilities ?? [],
   )
+  await linkExpenses(destinationId, input.expenses)
 }
 
 /** `newImage` is a photo chosen in the form; it is uploaded and becomes the destination's photo. */

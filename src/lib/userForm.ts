@@ -1,7 +1,7 @@
 import { USER_ROLES, type UserRecord, type UserRole } from './users'
 
+/** The only thing an administrator can change about a user. Name and email are shown read-only. */
 export interface UserFormValues {
-  name: string
   role: UserRole
 }
 
@@ -9,7 +9,7 @@ export type UserFormErrors = Partial<Record<keyof UserFormValues, string>>
 
 /** Pre-fills the form from an existing user. */
 export function valuesFromUser(user: UserRecord): UserFormValues {
-  return { name: user.name, role: user.role }
+  return { role: user.role }
 }
 
 /** Rules every password must meet; an empty password is checked by the caller. */
@@ -33,11 +33,6 @@ interface ValidateOptions {
 /** Returns an error message per invalid field; an empty object means the form is valid. */
 export function validateUser(values: UserFormValues, { protectLastAdmin = false }: ValidateOptions = {}): UserFormErrors {
   const errors: UserFormErrors = {}
-
-  const name = values.name.trim()
-  if (!name) errors.name = 'Enter the full name.'
-  else if (name.length < 2) errors.name = 'Name must be at least 2 characters.'
-  else if (name.length > 80) errors.name = 'Name must be 80 characters or fewer.'
 
   if (!USER_ROLES.includes(values.role)) errors.role = 'Choose a role.'
   else if (protectLastAdmin && values.role !== 'Tourism Administrator')

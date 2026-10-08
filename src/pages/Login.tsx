@@ -1,6 +1,7 @@
-import { Compass, LogIn } from 'lucide-react'
-import { useState } from 'react'
+import { LogIn } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import logo from '../assets/suroy-logo.png'
 import { FormField, PasswordInput } from '../components/ui'
 import { useCurrentAdmin } from '../hooks/session'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -9,6 +10,9 @@ import { safeRedirectPath, signInAdmin } from '../lib/auth'
 import { validateLogin, type LoginValues } from '../lib/settingsForm'
 
 const emptyLogin: LoginValues = { email: '', password: '' }
+
+/** How long the "You have been signed out." message stays on screen. */
+const SIGNED_OUT_MESSAGE_MS = 20_000
 
 /** Full-screen sign-in, deliberately outside the dashboard layout (no sidebar or header). */
 export default function Login() {
@@ -19,9 +23,17 @@ export default function Login() {
   const routeState = useLocation().state as { from?: string; signedOut?: boolean } | null
   const destination = safeRedirectPath(routeState?.from)
   const form = useSectionForm<LoginValues>(emptyLogin, validateLogin)
-  // A problem with the credentials themselves, shown above the form until the user edits a field.
+  // A problem with the credentials themselves (e.g. a wrong email or password). It stays on screen until the next
+  // sign-in attempt replaces it; typing in a field or waiting does not remove it.
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  // "You have been signed out." is only a short confirmation, so it goes away by itself after 20 seconds.
+  const [showSignedOut, setShowSignedOut] = useState(routeState?.signedOut === true)
+  useEffect(() => {
+    if (!showSignedOut) return
+    const timer = window.setTimeout(() => setShowSignedOut(false), SIGNED_OUT_MESSAGE_MS)
+    return () => window.clearTimeout(timer)
+  }, [showSignedOut])
 
   const emailProps = form.fieldProps('email')
   const passwordProps = form.fieldProps('password')
@@ -34,36 +46,35 @@ export default function Login() {
   return (
     <main className="login">
       <aside className="login__brand">
-        <span className="login__logo">
-          <Compass size={24} />
-        </span>
-        <h1 className="login__brand-name">SUROY</h1>
-        <p className="login__brand-sub">Tourism Admin</p>
-        <p className="login__tagline">
-          Manage destinations, transportation routes and users for Santo Tomas, Davao del Norte.
-        </p>
+        {/* One box for all four, so the logo and name line up with the start of each line of the description. */}
+        <div className="login__brand-inner">
+          <img className="login__logo" src={logo} alt="" aria-hidden="true" />
+          <h1 className="login__brand-name">SUROY</h1>
+          <p className="login__brand-sub">Tourism Admin</p>
+          <p className="login__tagline">
+            Manage destinations, transportation routes and users for Santo Tomas, Davao del Norte.
+          </p>
+        </div>
       </aside>
 
       <section className="login__panel">
         <div className="login__card">
           <div className="login__mobile-brand">
-            <span className="login__logo login__logo--small">
-              <Compass size={20} />
-            </span>
+            <img className="login__logo login__logo--small" src={logo} alt="" aria-hidden="true" />
             <span>
               <strong>SUROY</strong> Tourism Admin
             </span>
           </div>
 
           <h2 className="login__title">Admin sign in</h2>
-          <p className="login__subtitle">Sign in with your administrator account to continue.</p>
+
 
           {error ? (
             <div className="notice notice--error" role="alert">
               {error}
             </div>
           ) : (
-            routeState?.signedOut && (
+            showSignedOut && (
               <div className="notice notice--success" role="status">
                 You have been signed out.
               </div>
@@ -95,10 +106,6 @@ export default function Login() {
                   maxLength={254}
                   autoComplete="username"
                   autoFocus
-                  onChange={(e) => {
-                    setError(null)
-                    emailProps.onChange(e)
-                  }}
                 />
               )}
             </FormField>
@@ -110,10 +117,6 @@ export default function Login() {
                   toggleLabel="password"
                   maxLength={72}
                   autoComplete="current-password"
-                  onChange={(e) => {
-                    setError(null)
-                    passwordProps.onChange(e)
-                  }}
                 />
               )}
             </FormField>

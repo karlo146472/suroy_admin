@@ -1,5 +1,6 @@
-import { Compass, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import logo from '../../assets/suroy-logo.png'
 import { navItems } from './navItems'
 
 interface SidebarProps {
@@ -23,9 +24,7 @@ export default function Sidebar({ open, inert, onClose }: SidebarProps) {
         }}
       >
         <div className="sidebar__brand">
-          <span className="sidebar__logo">
-            <Compass size={20} aria-hidden="true" />
-          </span>
+          <img className="sidebar__logo" src={logo} alt="" aria-hidden="true" />
           <span className="sidebar__title">
             SUROY
             <span className="sidebar__subtitle">Tourism Admin</span>

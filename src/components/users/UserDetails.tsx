@@ -4,7 +4,6 @@ import { StatCard, StatusBadge, type BadgeTone } from '../ui'
 
 const roleTone: Record<UserRecord['role'], BadgeTone> = {
   'Tourism Administrator': 'info',
-  Business: 'warning',
   Traveler: 'neutral',
 }
 

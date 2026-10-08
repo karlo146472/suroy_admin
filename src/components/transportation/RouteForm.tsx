@@ -111,7 +111,7 @@ export default function RouteForm({
       <section className="form-card">
         <h2 className="form-card__title">Fare and Duration</h2>
         <div className="form-grid">
-          <FormField label="Estimated minimum fare (PHP)" required error={errorFor('fareMin')}>
+          <FormField label="Estimated minimum fare (PHP)" required error={errorFor('fareMin')} hint="Per person, one way, from Poblacion.">
             {(c) => <input {...c} className="input" type="text" inputMode="decimal" {...fieldProps('fareMin')} />}
           </FormField>
           <FormField

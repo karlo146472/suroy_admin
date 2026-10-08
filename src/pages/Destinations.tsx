@@ -311,7 +311,7 @@ export default function Destinations() {
         title="Delete Destination?"
         message={
           deleting
-            ? `“${deleting.name}” will be permanently removed from the app, along with its reviews, favorites and trip entries. This can't be undone.`
+            ? `“${deleting.name}” will be permanently removed from the app, along with its favorites and trip entries. This can't be undone.`
             : ''
         }
         confirmLabel="Delete"

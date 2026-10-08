@@ -1,4 +1,4 @@
-import { Heart, MapPin, Route, Star } from 'lucide-react'
+import { Heart, MapPin, Route } from 'lucide-react'
 import type { DestinationStats } from '../../lib/dashboard'
 import { StatusBadge } from '../ui'
 
@@ -32,13 +32,6 @@ export default function TopDestinations({ destinations, limit = 5 }: TopDestinat
               <span title="Added to trips">
                 <Route size={14} /> <span aria-hidden="true">{d.tripCount}</span>
                 <span className="visually-hidden">added to {d.tripCount} trips</span>
-              </span>
-              <span title={`${d.reviewCount} approved reviews`}>
-                <Star size={14} />{' '}
-                <span aria-hidden="true">{d.reviewCount === 0 ? 'No reviews' : `${d.avgRating.toFixed(1)} (${d.reviewCount})`}</span>
-                <span className="visually-hidden">
-                  {d.reviewCount === 0 ? 'no approved reviews' : `rated ${d.avgRating.toFixed(1)} from ${d.reviewCount} reviews`}
-                </span>
               </span>
             </div>
           </div>

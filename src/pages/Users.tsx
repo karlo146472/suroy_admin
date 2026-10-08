@@ -17,7 +17,6 @@ import {
   type Column,
   useToast,
 } from '../components/ui'
-import { updateAdminName, useCurrentAdmin } from '../hooks/session'
 import { valuesFromUser, type UserFormValues } from '../lib/userForm'
 import { fetchUsers, updateUser, USER_ROLES, type UserRecord, type UserRole } from '../lib/users'
 
@@ -27,7 +26,6 @@ const roleOptions = USER_ROLES.map((r) => ({ value: r, label: r }))
 
 const roleTone: Record<UserRole, BadgeTone> = {
   'Tourism Administrator': 'info',
-  Business: 'warning',
   Traveler: 'neutral',
 }
 
@@ -78,7 +76,6 @@ function EditButton({ user, onEdit }: { user: UserRecord; onEdit: () => void }) 
 
 export default function Users() {
   const toast = useToast()
-  const { admin } = useCurrentAdmin()
   const [users, setUsers] = useState<UserRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -129,22 +126,21 @@ export default function Users() {
 
   const applyEdit = async (values: UserFormValues) => {
     if (!editing) return
+    const personName = editing.name
     try {
-      await updateUser(editing.id, { name: values.name, role: values.role })
+      await updateUser(editing.id, { role: values.role })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'The user could not be saved. Please try again.')
       setPendingEdit(null)
       return
     }
-    // Keep the header in step when administrators rename themselves here.
-    if (admin && admin.id === editing.id) updateAdminName(values.name.trim())
     await loadUsers()
     setEditingId(null)
     setPendingEdit(null)
-    toast.success(`“${values.name.trim()}” was updated.`)
+    toast.success(`“${personName}” was updated.`)
   }
 
-  const pendingName = pendingEdit?.name.trim() || editing?.name || 'This user'
+  const pendingName = editing?.name || 'This user'
   const actionsFor = (u: UserRecord) => <EditButton user={u} onEdit={() => setEditingId(u.id)} />
 
   const columns: Column<UserRecord>[] = [
@@ -171,7 +167,7 @@ export default function Users() {
     <>
       <PageHeader
         title="Users"
-        description="People with an account on SUROY: travelers, businesses and administrators. New accounts are created when people register in the app."
+        description="People with an account on SUROY: travelers and administrators. New accounts are created when people register in the app."
       />
       <Toolbar>
         <SearchBar value={search} onChange={setSearch} placeholder="Search by name or email..." />
@@ -292,6 +288,7 @@ export default function Users() {
           <UserForm
             key={editing.id}
             formId={EDIT_FORM_ID}
+            name={editing.name}
             email={editing.email}
             protectLastAdmin={editingIsLastAdmin}
             initialValues={valuesFromUser(editing)}

@@ -1,10 +1,12 @@
 import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { validateUser, type UserFormValues } from '../../lib/userForm'
-import { USER_ROLES } from '../../lib/users'
+import { USER_ROLES, type UserRole } from '../../lib/users'
 import { FormField } from '../ui'
 
 interface UserFormProps {
   initialValues: UserFormValues
+  /** Shown read-only: a person's name is theirs to change, not an administrator's. */
+  name: string
   /** Shown read-only: the sign-in email is managed by Supabase Auth and cannot be changed here. */
   email: string
   /** May be async; the form ignores further submits until it finishes. */
@@ -15,7 +17,7 @@ interface UserFormProps {
 }
 
 /** The buttons live in the host (a modal footer) and submit this form through its `form` attribute. */
-export default function UserForm({ initialValues, email, onSubmit, formId, protectLastAdmin = false }: UserFormProps) {
+export default function UserForm({ initialValues, name, email, onSubmit, formId, protectLastAdmin = false }: UserFormProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [values, setValues] = useState<UserFormValues>(initialValues)
   const [touched, setTouched] = useState<Partial<Record<keyof UserFormValues, boolean>>>({})
@@ -25,12 +27,12 @@ export default function UserForm({ initialValues, email, onSubmit, formId, prote
   const errors = useMemo(() => validateUser(values, { protectLastAdmin }), [values, protectLastAdmin])
   const errorFor = (key: keyof UserFormValues) => (submitted || touched[key] ? errors[key] : undefined)
 
-  const fieldProps = (key: keyof UserFormValues) => ({
-    value: values[key],
-    onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setValues((v) => ({ ...v, [key]: e.target.value })),
-    onBlur: () => setTouched((t) => ({ ...t, [key]: true })),
-  })
+  // The role is the only editable field.
+  const roleProps = {
+    value: values.role,
+    onChange: (e: ChangeEvent<HTMLSelectElement>) => setValues({ role: e.target.value as UserRole }),
+    onBlur: () => setTouched({ role: true }),
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -51,8 +53,8 @@ export default function UserForm({ initialValues, email, onSubmit, formId, prote
 
   return (
     <form id={formId} ref={formRef} className="form-stack" onSubmit={handleSubmit} noValidate autoComplete="off">
-      <FormField label="Full name" required error={errorFor('name')}>
-        {(c) => <input {...c} className="input" type="text" maxLength={80} autoComplete="off" {...fieldProps('name')} />}
+      <FormField label="Full name" hint="The name cannot be changed here.">
+        {(c) => <input {...c} className="input" type="text" value={name} readOnly />}
       </FormField>
       <FormField label="Email" hint="The sign-in email cannot be changed here.">
         {(c) => <input {...c} className="input" type="email" value={email} readOnly />}
@@ -65,12 +67,12 @@ export default function UserForm({ initialValues, email, onSubmit, formId, prote
           protectLastAdmin
             ? 'The only administrator, so the role is locked in until another administrator exists.'
             : values.role === 'Tourism Administrator'
-              ? 'Administrators can manage all content and users.'
-              : undefined
+              ? 'Only administrators can change roles. Administrators can manage all content and users.'
+              : 'Only administrators can change roles.'
         }
       >
         {(c) => (
-          <select {...c} className="input" {...fieldProps('role')}>
+          <select {...c} className="input" {...roleProps}>
             {USER_ROLES.map((r) => (
               <option key={r} value={r}>
                 {r}

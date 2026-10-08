@@ -3,52 +3,69 @@
   min-height: 100%;
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  background: var(--bg);
+  /* The photo covers the whole page. A green wash over it is darkest on the left, behind the white text,
+     and lighter on the right, around the sign-in card. */
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--primary) 62%, transparent) 0%,
+      color-mix(in srgb, var(--primary) 34%, transparent) 50%,
+      color-mix(in srgb, var(--primary) 10%, transparent) 100%
+    ),
+    url('../assets/login-bg.png') center / cover no-repeat,
+    var(--primary);
 }
+
 
 .login__brand {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-content: center;
+  align-items: center;
+  /* Centered in the panel, so it keeps an even margin on both sides. */
+
   padding: var(--space-xxl);
-  background: var(--primary);
   color: var(--on-primary);
+  /* The photo is lighter now, so a soft shadow keeps the white text easy to read. */
+
 }
 
 .login__logo {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
+  display: block;
+  width: 72px;
+  height: 72px;
   margin-bottom: var(--space-md);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--on-primary) 18%, transparent);
+}
+
+/* The logo, name, "Tourism Admin" and the description share one box, centered in the panel, with everything
+   inside starting on the same left edge. */
+.login__brand-inner {
+  width: 100%;
+  max-width: 460px;
 }
 
 .login__logo--small {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   margin: 0;
-  border-radius: var(--radius-sm);
-  background: var(--primary);
-  color: var(--on-primary);
 }
 
 .login__brand-name {
-  font-size: var(--text-display);
+  font-size: 56px;
   letter-spacing: 0.1em;
   line-height: 1.1;
 }
 
 .login__brand-sub {
   margin-top: var(--space-xs);
-  font-size: var(--text-md);
+  font-size: 22px;
 }
 
 .login__tagline {
-  margin-top: var(--space-xl);
-  max-width: 340px;
-  font-size: var(--text-lg);
+  margin-top: var(--space-md);
+  max-width: 500px;
+  font-size: 24px;
   line-height: 1.5;
 }
 
@@ -58,11 +75,35 @@
   padding: var(--space-lg);
 }
 
-.login__card {
+/* Doubled with .login so this beats the plain solid card background declared in ui.css. */
+.login .login__card {
   width: 100%;
   max-width: 420px;
   padding: var(--space-xl);
-  box-shadow: var(--shadow);
+  /* The card always sits on the photo, so its words are light in both themes. These values replace the theme's
+     text colors for everything inside the card. */
+  --glass-tint: color-mix(in srgb, var(--primary) 45%, black);
+  --text: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.86);
+  --on-primary: #ffffff;
+  --success-text: #d5f8d8;
+  --error-text: #ffc9c4;
+  color: var(--text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  /* Frosted glass: a light sheen across a very see-through deep-green tint, the photo heavily blurred behind it,
+     a bright edge, and a highlight along the top rim. */
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #ffffff 20%, transparent),
+      color-mix(in srgb, #ffffff 3%, transparent)
+    ),
+    color-mix(in srgb, var(--glass-tint) 34%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(1.7) brightness(1.05);
+  backdrop-filter: blur(30px) saturate(1.7) brightness(1.05);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28);
 }
 
 .login__mobile-brand {
@@ -70,17 +111,109 @@
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-lg);
-  color: var(--primary);
+  color: var(--text);
 }
 
 .login__title {
-  font-size: var(--text-xl);
+  font-size: 1.8rem;
   font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .login__subtitle {
   margin: var(--space-xs) 0 var(--space-lg);
   color: var(--text-secondary);
+}
+
+/* Everything inside the card is glass too: fields, the show-password button, notices, the Sign in button and the
+   help text. The fields, the eye button and the help text are a flat see-through tint (no gradient) with a little
+   blur. Doubled with .login so these beat the solid styles in ui.css and forms.css. */
+.login .login__card .input,
+.login .login__card .btn--icon,
+.login .login__card .login__demo {
+  background: color-mix(in srgb, var(--glass-tint) 26%, transparent);
+  color: var(--text);
+  text-shadow: none;
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border: 0;
+  box-shadow: none;
+}
+
+.login .login__card .input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Browsers paint their own bright background (pale blue or white) on autofilled and suggested fields, which hides
+   the white text. A very large inset shadow in the glass's deep green covers that background, and the text is
+   forced to stay white. The caret and the dark color scheme keep the rest of the field readable too. */
+.login .login__card .input {
+  color-scheme: dark;
+  caret-color: #ffffff;
+}
+
+.login .login__card .input:-webkit-autofill,
+.login .login__card .input:-webkit-autofill:hover,
+.login .login__card .input:-webkit-autofill:focus,
+.login .login__card .input:-webkit-autofill:active,
+.login .login__card .input:autofill {
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
+  box-shadow: 0 0 0 1000px color-mix(in srgb, var(--primary) 40%, black) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* No borders anywhere: focus and error show as a soft glow instead, so they stay visible. */
+.login .login__card .input:focus,
+.login .login__card .input:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 55%, #ffffff 15%);
+}
+
+.login .login__card .input[aria-invalid='true'] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 80%, #ffffff);
+}
+
+.login .login__card .btn--icon:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--glass-tint) 26%, #ffffff 12%);
+}
+
+/* Sign in: green glass instead of a solid green block. */
+.login .login__card .btn--primary {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #ffffff 24%, transparent),
+      color-mix(in srgb, #ffffff 4%, transparent)
+    ),
+    color-mix(in srgb, var(--primary) 70%, black 8%);
+  color: #ffffff;
+  /* 10 px of space above and below the button. */
+  margin-top: 10px;
+  margin-bottom: 10px;
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  backdrop-filter: blur(12px) saturate(1.5);
+  border: 0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.login .login__card .btn--primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+/* Messages keep their color (green or red) but become tinted glass. */
+.login .login__card .notice {
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  border: 0;
+}
+
+.login .login__card .notice--success {
+  background: color-mix(in srgb, var(--secondary) 26%, transparent);
+}
+
+.login .login__card .notice--error {
+  background: color-mix(in srgb, var(--error) 24%, transparent);
 }
 
 .login .form-stack {
@@ -115,7 +248,7 @@
     display: flex;
   }
 
-  .login__card {
+  .login .login__card {
     padding: var(--space-lg);
   }
 }

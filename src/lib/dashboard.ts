@@ -15,9 +15,6 @@ export interface DestinationStats {
   favorites: number
   /** Times added to a trip itinerary. */
   tripCount: number
-  /** Average of approved reviews, or 0 when there are none. */
-  avgRating: number
-  reviewCount: number
 }
 
 export interface DashboardData {
@@ -34,38 +31,29 @@ function countByDestination(rows: { destination_id: number }[]): Map<number, num
   return counts
 }
 
-// Administrators may read every favorite, trip and review (see the row-level security policies), so these
-// counts cover all users. Only the destination id (and rating) is requested, never anyone's personal details.
+// Administrators may read every favorite and trip (see the row-level security policies), so these counts
+// cover all users. Only the destination id is requested, never anyone's personal details.
 async function fetchDestinationStats(destinations: DestinationRecord[]): Promise<DestinationStats[]> {
-  const [favorites, trips, reviews] = await Promise.all([
+  const [favorites, trips] = await Promise.all([
     supabase.from('favorites').select('destination_id'),
     supabase.from('trip_destinations').select('destination_id'),
-    supabase.from('reviews').select('destination_id, rating').eq('status', 'approved'),
   ])
   if (favorites.error) throw favorites.error
   if (trips.error) throw trips.error
-  if (reviews.error) throw reviews.error
 
   const favoriteCounts = countByDestination(favorites.data)
   const tripCounts = countByDestination(trips.data)
-  const ratings = new Map<number, number[]>()
-  reviews.data.forEach((row) => ratings.set(row.destination_id, [...(ratings.get(row.destination_id) ?? []), row.rating]))
 
-  return destinations.map((d) => {
-    const list = ratings.get(d.id) ?? []
-    return {
-      id: d.id,
-      name: d.name,
-      category: d.category,
-      barangay: d.barangay,
-      latitude: d.latitude,
-      longitude: d.longitude,
-      favorites: favoriteCounts.get(d.id) ?? 0,
-      tripCount: tripCounts.get(d.id) ?? 0,
-      avgRating: list.length === 0 ? 0 : list.reduce((sum, r) => sum + r, 0) / list.length,
-      reviewCount: list.length,
-    }
-  })
+  return destinations.map((d) => ({
+    id: d.id,
+    name: d.name,
+    category: d.category,
+    barangay: d.barangay,
+    latitude: d.latitude,
+    longitude: d.longitude,
+    favorites: favoriteCounts.get(d.id) ?? 0,
+    tripCount: tripCounts.get(d.id) ?? 0,
+  }))
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {

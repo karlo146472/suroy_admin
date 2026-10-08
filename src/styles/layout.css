@@ -26,13 +26,9 @@
 }
 
 .sidebar__logo {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--on-primary) 18%, transparent);
-  color: var(--on-primary);
+  display: block;
+  width: 36px;
+  height: 36px;
 }
 
 .sidebar__title {

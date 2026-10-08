@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 
 /** Matches the role check on the profiles table. */
-export const USER_ROLES = ['Traveler', 'Business', 'Tourism Administrator'] as const
+export const USER_ROLES = ['Traveler', 'Tourism Administrator'] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
 export interface UserRecord {
@@ -58,14 +58,15 @@ export async function fetchUsers(): Promise<UserRecord[]> {
 }
 
 /**
- * Changes a person's name and role. The database enforces the rules: only an administrator may do this, and
- * the last administrator cannot be demoted. Their error message is passed on as-is.
+ * Changes a person's role. Nothing else about them is changed from here: their name and email stay as they are.
+ * The database enforces the rules: only an administrator may change a role, and the last administrator cannot
+ * be demoted. Their error message is passed on as-is.
  */
-export async function updateUser(id: string, input: { name: string; role: UserRole }): Promise<void> {
+export async function updateUser(id: string, input: { role: UserRole }): Promise<void> {
   // Asking for the row back matters: when a policy blocks the change, Supabase returns no error and no rows.
   const { data, error } = await supabase
     .from('profiles')
-    .update({ name: input.name.trim(), role: input.role })
+    .update({ role: input.role })
     .eq('id', id)
     .select('id')
   if (error) throw error
