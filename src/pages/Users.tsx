@@ -1,4 +1,4 @@
-import { CalendarDays, Pencil, SearchX } from 'lucide-react'
+import { CalendarDays, SearchX } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import UserDetails from '../components/users/UserDetails'
 import UserForm from '../components/users/UserForm'
@@ -54,25 +54,6 @@ function UserCell({ user }: { user: UserRecord }) {
 }
 
 const RoleBadge = ({ role }: { role: UserRole }) => <StatusBadge tone={roleTone[role]}>{role}</StatusBadge>
-
-function EditButton({ user, onEdit }: { user: UserRecord; onEdit: () => void }) {
-  return (
-    <div className="row-actions">
-      <button
-        type="button"
-        className="btn btn--small"
-        aria-label={`Edit ${user.name}`}
-        onClick={(e) => {
-          // Don't also open the details view.
-          e.stopPropagation()
-          onEdit()
-        }}
-      >
-        <Pencil size={14} /> Edit
-      </button>
-    </div>
-  )
-}
 
 export default function Users() {
   const toast = useToast()
@@ -141,13 +122,10 @@ export default function Users() {
   }
 
   const pendingName = editing?.name || 'This user'
-  const actionsFor = (u: UserRecord) => <EditButton user={u} onEdit={() => setEditingId(u.id)} />
-
   const columns: Column<UserRecord>[] = [
     { key: 'user', header: 'User', render: (u) => <UserCell user={u} /> },
     { key: 'role', header: 'Role', render: (u) => <RoleBadge role={u.role} /> },
     { key: 'registeredAt', header: 'Registered', render: (u) => formatDate(u.registeredAt) },
-    { key: 'actions', header: 'Actions', align: 'right', render: actionsFor },
   ]
 
   // Newest registrations first (the database already returns them in that order).
@@ -235,10 +213,6 @@ export default function Users() {
                   <span className="record-card__meta">
                     <CalendarDays size={14} /> {formatDate(u.registeredAt)}
                   </span>
-                </div>
-                <div className="record-card__row">
-                  <span />
-                  {actionsFor(u)}
                 </div>
               </li>
             ))}
