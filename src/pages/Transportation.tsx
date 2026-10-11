@@ -1,6 +1,7 @@
 import { ArrowRight, Clock, Pencil, Plus, SearchX, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import RouteForm from '../components/transportation/RouteForm'
+import RoutesForm from '../components/transportation/RoutesForm'
 import RouteMapPanel from '../components/transportation/RouteMapPanel'
 import {
   ConfirmDialog,
@@ -17,9 +18,9 @@ import {
 } from '../components/ui'
 import type { DestinationRecord } from '../lib/destinationTypes'
 import { fetchDestinations } from '../lib/destinations'
-import { emptyRouteForm, inputFromValues, valuesFromRecord } from '../lib/routeForm'
+import { inputFromValues, inputsFromMulti, valuesFromRecord } from '../lib/routeForm'
 import {
-  createRoute,
+  createRoutes,
   deleteRoute,
   fetchRoutes,
   isFreeTransport,
@@ -177,7 +178,7 @@ export default function Transportation() {
         description="Routes and fares for getting to destinations in Santo Tomas."
         actions={
           <button type="button" className="btn btn--primary" onClick={() => setAdding(true)}>
-            <Plus size={16} /> Add Route
+            <Plus size={16} /> Add Transportation
           </button>
         }
       />
@@ -298,7 +299,7 @@ export default function Transportation() {
       <Modal
         wide
         open={adding}
-        title="Add Transportation Route"
+        title="Add Transportation"
         onClose={() => setAdding(false)}
         footer={
           <>
@@ -306,31 +307,28 @@ export default function Transportation() {
               Cancel
             </button>
             <button type="submit" form={ADD_FORM_ID} className="btn btn--primary">
-              Save Route
+              Save
             </button>
           </>
         }
       >
-        {/* Mounted only while open, so the form always starts empty. */}
+        {/* Mounted only while open, so the form always starts empty. One destination, any number of ways to get there. */}
         {adding && (
-          <RouteForm
+          <RoutesForm
             formId={ADD_FORM_ID}
-            showActions={false}
-            initialValues={emptyRouteForm}
             destinations={destinationChoices}
-            transportTypes={transportTypes}
             existingRoutes={routes}
-            submitLabel="Save Route"
             onSubmit={async (values) => {
+              const inputs = inputsFromMulti(values)
               try {
-                await createRoute(inputFromValues(values))
+                await createRoutes(inputs)
               } catch (error) {
-                toast.error(error instanceof Error ? error.message : 'The route could not be saved. Please try again.')
+                toast.error(error instanceof Error ? error.message : 'The routes could not be saved. Please try again.')
                 return
               }
               await loadAll()
               setAdding(false)
-              toast.success('The route was added.')
+              toast.success(inputs.length === 1 ? 'The route was added.' : `${inputs.length} routes were added.`)
             }}
           />
         )}

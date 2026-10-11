@@ -84,6 +84,13 @@ export async function createRoute(input: RouteInput): Promise<void> {
   if (error) throw error
 }
 
+/** Adds several routes in one request, so either all of them are saved or none is. */
+export async function createRoutes(inputs: RouteInput[]): Promise<void> {
+  if (inputs.length === 0) return
+  const { error } = await supabase.from('transportation_options').insert(inputs.map(columnsFrom))
+  if (error) throw error
+}
+
 export async function updateRoute(id: number, input: RouteInput): Promise<void> {
   // Asking for the row back matters: when a policy blocks the change, Supabase returns no error and no rows.
   const { data, error } = await supabase

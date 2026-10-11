@@ -50,6 +50,76 @@ export function inputFromValues(values: RouteFormValues): RouteInput {
 
 const parseNumber = (text: string) => (text.trim() === '' ? NaN : Number(text))
 
+// --- Adding several ways of getting to one destination at once ---
+
+/** What the admin fills in for one way of getting there. */
+export interface ModeDetails {
+  fareMin: string
+  fareMax: string
+  duration: string
+  instructions: string
+}
+
+export const emptyModeDetails: ModeDetails = { fareMin: '', fareMax: '', duration: '', instructions: '' }
+
+/** One destination and any number of ways of getting there (the keys of `modes` are the chosen ones). */
+export interface MultiRouteValues {
+  destinationId: string
+  modes: Record<string, ModeDetails>
+}
+
+export interface MultiRouteErrors {
+  destinationId?: string
+  /** About the choice of ways as a whole, e.g. none chosen. */
+  modes?: string
+  /** Problems inside one chosen way, by its name. */
+  byMode: Record<string, Partial<Record<keyof ModeDetails | 'transportType', string>>>
+}
+
+/** Converts validated values into one route per chosen way. */
+export function inputsFromMulti(values: MultiRouteValues): RouteInput[] {
+  return Object.entries(values.modes).map(([transportType, details]) =>
+    inputFromValues({ destinationId: values.destinationId, transportType, ...details }),
+  )
+}
+
+/** True when there is nothing to fix. */
+export const isMultiValid = (errors: MultiRouteErrors) =>
+  !errors.destinationId && !errors.modes && Object.keys(errors.byMode).length === 0
+
+/**
+ * Checks a destination with several ways of getting there. Every chosen way is checked like a single route (fares
+ * unless it is free, duration, instructions, and not already recorded for the destination), and Motorcycle and
+ * Habal-habal can't both be chosen because they are the same ride.
+ */
+export function validateRoutes(
+  values: MultiRouteValues,
+  destinationIds: number[],
+  transportTypes: string[],
+  existing: RouteRecord[],
+): MultiRouteErrors {
+  const errors: MultiRouteErrors = { byMode: {} }
+
+  if (!values.destinationId) errors.destinationId = 'Choose the destination these routes go to.'
+  else if (!destinationIds.includes(Number(values.destinationId))) errors.destinationId = 'Choose a destination from the list.'
+
+  const chosen = Object.keys(values.modes)
+  if (chosen.length === 0) errors.modes = 'Choose at least one way of getting there.'
+
+  const seen = new Set<string>()
+  for (const transportType of chosen) {
+    const problems = validateRoute({ destinationId: values.destinationId, transportType, ...values.modes[transportType] }, destinationIds, transportTypes, existing)
+    // The destination is reported once, above; everything else belongs to this way.
+    const own = { ...problems }
+    delete own.destinationId
+    const key = transportKey(transportType)
+    if (seen.has(key)) own.transportType = 'Motorcycle and Habal-habal are the same ride. Choose only one of them.'
+    seen.add(key)
+    if (Object.keys(own).length > 0) errors.byMode[transportType] = own
+  }
+  return errors
+}
+
 /** Returns an error message per invalid field; an empty object means the form is valid. */
 export function validateRoute(
   values: RouteFormValues,
