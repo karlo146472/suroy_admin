@@ -7,6 +7,7 @@ import ActivityLog from './pages/ActivityLog'
 import Categories from './pages/Categories'
 import Dashboard from './pages/Dashboard'
 import Destinations from './pages/Destinations'
+import EmailConfirmed from './pages/EmailConfirmed'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
 import Settings from './pages/Settings'
@@ -22,6 +23,8 @@ export default function App() {
         {/* Outside AdminLayout on purpose: the sign-in page has no sidebar or header. */}
         <Route path="login" element={<Login />} />
         <Route path="logout" element={<SignOut />} />
+        {/* Public: where travelers land after tapping the link in the sign-up email of the mobile app. */}
+        <Route path="email-confirmed" element={<EmailConfirmed />} />
         {/* Everything below needs an active administrator; otherwise RequireAdmin redirects to /login. */}
         <Route element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>

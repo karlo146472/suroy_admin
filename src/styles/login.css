@@ -234,6 +234,23 @@
 }
 
 
+/* The public "email confirmed" page: the same photo and glass card, with only the card, centered. */
+.login--center {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.login .login__card--status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.login .login__card--status .login__subtitle {
+  margin: 0;
+}
+
 /* Narrow screens: drop the brand panel and show a small brand line above the form */
 @media (max-width: 900px) {
   .login {
