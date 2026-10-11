@@ -8,10 +8,13 @@ import {
   ALLOWED_IMAGE_TYPES,
   MAX_IMAGE_BYTES,
   STATUS_OPTIONS,
+  isOutsideSantoTomas,
+  parseLocation,
   validateDestination,
   type DestinationFormValues,
   type ExpenseValues,
 } from '../../lib/destinationForm'
+import { OUTSIDE_SANTO_TOMAS_MESSAGE, SANTO_TOMAS_BOUNDARY } from '../../lib/santoTomasBoundary'
 import { FormField, LoadingState } from '../ui'
 
 // Loaded on demand so the map library isn't part of every page's bundle.
@@ -98,9 +101,10 @@ export default function DestinationForm({
     return current && !availableCategories.includes(current) ? [...availableCategories, current] : availableCategories
   })
 
+  // The location a saved destination was loaded with is not re-checked unless it is moved (see isOutsideSantoTomas).
   const errors = useMemo(
-    () => validateDestination(values, categoryNames, existingNames),
-    [values, categoryNames, existingNames],
+    () => validateDestination(values, categoryNames, existingNames, initialValues),
+    [values, categoryNames, existingNames, initialValues],
   )
 
   // The map opens on the saved location when editing, otherwise on Santo Tomas.
@@ -113,8 +117,9 @@ export default function DestinationForm({
       : { center: SANTO_TOMAS_CENTER, zoom: 11 }
   })
 
-  const hasValidLocation = !errors.latitude && !errors.longitude
-  const pin = hasValidLocation ? { latitude: Number(values.latitude), longitude: Number(values.longitude) } : null
+  // The pin stays visible even when it is outside Santo Tomas, so the admin sees where they clicked and can move it.
+  const pin = parseLocation(values)
+  const outsideSantoTomas = isOutsideSantoTomas(values, initialValues)
 
   // A chosen photo is previewed from the file itself; otherwise the destination's saved photo is shown.
   const chosenPreview = useMemo(() => (values.image ? URL.createObjectURL(values.image) : null), [values.image])
@@ -229,8 +234,14 @@ export default function DestinationForm({
           </FormField>
           <div className="form-grid__full">
             <p className="form-field__hint picker-hint">
-              Click the map or drag the pin to set the location. Latitude and longitude fill in automatically.
+              Click the map or drag the pin to set the location. Latitude and longitude fill in automatically. Only
+              locations inside Santo Tomas are allowed: the dashed line on the map is its border.
             </p>
+            {outsideSantoTomas ? (
+              <div className="notice notice--error" role="alert">
+                {OUTSIDE_SANTO_TOMAS_MESSAGE}
+              </div>
+            ) : null}
             <div className="picker-map">
               <Suspense fallback={<LoadingState label="Loading map..." />}>
                 <MapView
@@ -241,6 +252,7 @@ export default function DestinationForm({
                   height="100%"
                   pin={pin}
                   onPinChange={pickLocation}
+                  line={SANTO_TOMAS_BOUNDARY}
                 />
               </Suspense>
             </div>

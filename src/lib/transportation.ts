@@ -1,7 +1,21 @@
 import { supabase } from './supabase'
 
-/** Suggested types. Routes already in the database may use others, which are offered too. */
-export const TRANSPORT_TYPES = ['Habal-habal', 'Tricycle', 'Jeepney', 'Van', 'Bus']
+/**
+ * The ways of getting somewhere that an administrator can add to a destination. The traveler only ever sees the
+ * ones added to the destination they pick, and chooses between them. Routes already in the database may use other
+ * names, which are offered too so they can still be edited.
+ *
+ * "Habal-habal" and "Motorcycle" are the same ride: the name used in hilly places and in town. Pick the one that
+ * fits the destination.
+ */
+export const TRANSPORT_TYPES = ['Motorcycle', 'Habal-habal', 'Tricycle', 'Jeep', 'Van', 'Bus', 'Personal car']
+
+/** The traveler's own car: free, so no fare is recorded for it (it is stored as ₱0). */
+export const PERSONAL_CAR = 'Personal car'
+export const isFreeTransport = (transportType: string) => transportType === PERSONAL_CAR
+
+/** Habal-habal and Motorcycle are one ride with two names, so a destination can only have one of them. */
+export const transportKey = (transportType: string) => (transportType === 'Habal-habal' ? 'Motorcycle' : transportType)
 
 /** The database has no origin column; like the mobile app, every route starts from the town center. */
 export const ROUTE_ORIGIN = 'Poblacion'

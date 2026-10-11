@@ -1,5 +1,6 @@
 import { EXPENSE_TYPES, type DestinationRecord, type DestinationStatus, type ExpenseType } from './destinationTypes'
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_BYTES } from './destinationImages'
+import { isInsideSantoTomas } from './santoTomasBoundary'
 
 export const ACTIVITY_OPTIONS = [
   'Hiking',
@@ -136,11 +137,39 @@ function parseNumber(text: string): number {
   return text.trim() === '' ? NaN : Number(text)
 }
 
-/** Returns an error message per invalid field; an empty object means the form is valid. */
+/** The typed location as numbers, or null while it is missing, not a number or outside the Philippines. */
+export function parseLocation(values: Pick<DestinationFormValues, 'latitude' | 'longitude'>) {
+  const latitude = parseNumber(values.latitude)
+  const longitude = parseNumber(values.longitude)
+  if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null
+  if (latitude < 4.5 || latitude > 21.5 || longitude < 116 || longitude > 127) return null
+  return { latitude, longitude }
+}
+
+/**
+ * True when the location is outside Santo Tomas and has to be fixed before saving. A destination that is already
+ * saved keeps its old coordinates: only a location that was changed (or any location of a new destination) is checked.
+ */
+export function isOutsideSantoTomas(
+  values: Pick<DestinationFormValues, 'latitude' | 'longitude'>,
+  saved?: Pick<DestinationFormValues, 'latitude' | 'longitude'>,
+): boolean {
+  const location = parseLocation(values)
+  if (!location) return false
+  const before = saved ? parseLocation(saved) : null
+  if (before && before.latitude === location.latitude && before.longitude === location.longitude) return false
+  return !isInsideSantoTomas(location.latitude, location.longitude)
+}
+
+/**
+ * Returns an error message per invalid field; an empty object means the form is valid.
+ * `saved` is the destination's location as it was loaded (leave it out for a new destination).
+ */
 export function validateDestination(
   values: DestinationFormValues,
   categories: string[],
   existingNames: string[],
+  saved?: Pick<DestinationFormValues, 'latitude' | 'longitude'>,
 ): FormErrors {
   const errors: FormErrors = {}
 
@@ -172,6 +201,12 @@ export function validateDestination(
   if (values.longitude.trim() === '') errors.longitude = 'Enter the longitude.'
   else if (Number.isNaN(lng)) errors.longitude = 'Longitude must be a number, e.g. 125.6167.'
   else if (lng < 116 || lng > 127) errors.longitude = 'Longitude must be within the Philippines (116 to 127).'
+
+  // Only Santo Tomas: the message under the fields is short; the form also shows the full explanation by the map.
+  if (!errors.latitude && !errors.longitude && isOutsideSantoTomas(values, saved)) {
+    errors.latitude = 'Outside Santo Tomas.'
+    errors.longitude = 'Outside Santo Tomas.'
+  }
 
   const fee = parseNumber(values.entranceFee)
   if (values.entranceFee.trim() === '') errors.entranceFee = 'Enter the fee, or 0 if free.'

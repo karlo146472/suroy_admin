@@ -22,6 +22,7 @@ import {
   createRoute,
   deleteRoute,
   fetchRoutes,
+  isFreeTransport,
   ROUTE_ORIGIN,
   TRANSPORT_TYPES,
   updateRoute,
@@ -31,8 +32,13 @@ import {
 const ADD_FORM_ID = 'add-route-form'
 const EDIT_FORM_ID = 'edit-route-form'
 
-const formatFare = (min: number, max: number) =>
-  min === max ? `₱${min.toLocaleString()}` : `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`
+/** A route's fare as text: "Free" for the traveler's own car, otherwise the amount or range. */
+const formatFare = (route: RouteRecord) =>
+  isFreeTransport(route.transportType)
+    ? 'Free'
+    : route.fareMin === route.fareMax
+      ? `₱${route.fareMin.toLocaleString()}`
+      : `₱${route.fareMin.toLocaleString()} – ₱${route.fareMax.toLocaleString()}`
 
 function RouteName({ route }: { route: RouteRecord }) {
   return (
@@ -137,7 +143,7 @@ export default function Transportation() {
   const columns: Column<RouteRecord>[] = [
     { key: 'route', header: 'Route', render: (r) => <strong><RouteName route={r} /></strong> },
     { key: 'transportType', header: 'Transport Type' },
-    { key: 'fare', header: 'Fare', render: (r) => formatFare(r.fareMin, r.fareMax) },
+    { key: 'fare', header: 'Fare', render: (r) => formatFare(r) },
     { key: 'duration', header: 'Estimated Duration' },
     {
       key: 'actions',
@@ -250,7 +256,7 @@ export default function Transportation() {
                 </div>
                 <div className="record-card__row">
                   <span>{r.transportType}</span>
-                  <span>{formatFare(r.fareMin, r.fareMax)}</span>
+                  <span>{formatFare(r)}</span>
                 </div>
                 <div className="record-card__row">
                   <span className="record-card__meta">

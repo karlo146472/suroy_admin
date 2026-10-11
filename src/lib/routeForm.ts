@@ -1,4 +1,4 @@
-import type { RouteInput, RouteRecord } from './transportation'
+import { isFreeTransport, transportKey, type RouteInput, type RouteRecord } from './transportation'
 
 export interface RouteFormValues {
   /** The chosen destination's id, as the text of the <select>. */
@@ -36,11 +36,13 @@ export function valuesFromRecord(record: RouteRecord): RouteFormValues {
 
 /** Converts validated form values into the shape stored for a route. */
 export function inputFromValues(values: RouteFormValues): RouteInput {
+  const free = isFreeTransport(values.transportType)
   return {
     destinationId: Number(values.destinationId),
     transportType: values.transportType,
-    fareMin: Number(values.fareMin),
-    fareMax: Number(values.fareMax),
+    // The traveler's own car is free: no fare is asked for, and it is stored as 0.
+    fareMin: free ? 0 : Number(values.fareMin),
+    fareMax: free ? 0 : Number(values.fareMax),
     duration: values.duration.trim(),
     instructions: values.instructions.trim(),
   }
@@ -54,6 +56,8 @@ export function validateRoute(
   destinationIds: number[],
   transportTypes: string[],
   existing: RouteRecord[],
+  /** The id of the route being edited, so it isn't counted as a duplicate of itself. */
+  editingId?: number,
 ): RouteFormErrors {
   const errors: RouteFormErrors = {}
 
@@ -64,22 +68,34 @@ export function validateRoute(
   else if (!transportTypes.includes(values.transportType)) errors.transportType = 'Choose a transport type from the list.'
   else if (
     values.destinationId &&
-    existing.some((r) => r.destinationId === Number(values.destinationId) && r.transportType === values.transportType)
+    existing.some(
+      (r) =>
+        r.destinationId === Number(values.destinationId) &&
+        transportKey(r.transportType) === transportKey(values.transportType) &&
+        // When editing a route, its own saved copy is not a duplicate.
+        !(editingId !== undefined && r.id === editingId),
+    )
   )
-    errors.transportType = 'This destination already has a route with this transport type.'
+    errors.transportType =
+      transportKey(values.transportType) === 'Motorcycle'
+        ? 'This destination already has Motorcycle or Habal-habal (the same ride). Edit that one instead.'
+        : 'This destination already has a route with this transport type.'
 
-  const min = parseNumber(values.fareMin)
-  if (values.fareMin.trim() === '') errors.fareMin = 'Enter the minimum fare.'
-  else if (Number.isNaN(min)) errors.fareMin = 'Minimum fare must be a number.'
-  else if (min < 0) errors.fareMin = 'Fare cannot be negative.'
-  else if (min > 10000) errors.fareMin = 'Fare looks too high.'
+  // A personal car is free, so there is no fare to check.
+  if (!isFreeTransport(values.transportType)) {
+    const min = parseNumber(values.fareMin)
+    if (values.fareMin.trim() === '') errors.fareMin = 'Enter the minimum fare.'
+    else if (Number.isNaN(min)) errors.fareMin = 'Minimum fare must be a number.'
+    else if (min < 0) errors.fareMin = 'Fare cannot be negative.'
+    else if (min > 10000) errors.fareMin = 'Fare looks too high.'
 
-  const max = parseNumber(values.fareMax)
-  if (values.fareMax.trim() === '') errors.fareMax = 'Enter the maximum fare.'
-  else if (Number.isNaN(max)) errors.fareMax = 'Maximum fare must be a number.'
-  else if (max < 0) errors.fareMax = 'Fare cannot be negative.'
-  else if (max > 10000) errors.fareMax = 'Fare looks too high.'
-  else if (!errors.fareMin && max < min) errors.fareMax = 'Maximum fare cannot be lower than the minimum.'
+    const max = parseNumber(values.fareMax)
+    if (values.fareMax.trim() === '') errors.fareMax = 'Enter the maximum fare.'
+    else if (Number.isNaN(max)) errors.fareMax = 'Maximum fare must be a number.'
+    else if (max < 0) errors.fareMax = 'Fare cannot be negative.'
+    else if (max > 10000) errors.fareMax = 'Fare looks too high.'
+    else if (!errors.fareMin && max < min) errors.fareMax = 'Maximum fare cannot be lower than the minimum.'
+  }
 
   const duration = values.duration.trim()
   if (!duration) errors.duration = 'Enter the estimated travel time, e.g. 25-40 minutes.'

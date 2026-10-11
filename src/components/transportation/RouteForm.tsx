@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { validateRoute, type RouteFormValues } from '../../lib/routeForm'
-import { ROUTE_ORIGIN, type RouteRecord } from '../../lib/transportation'
+import { isFreeTransport, ROUTE_ORIGIN, type RouteRecord } from '../../lib/transportation'
 import { FormField } from '../ui'
 
 type TextField = keyof RouteFormValues
@@ -48,6 +48,8 @@ export default function RouteForm({
   )
 
   const errorFor = (key: TextField) => (submitted || touched[key] ? errors[key] : undefined)
+  // The traveler's own car costs nothing, so there is no fare to enter for it.
+  const free = isFreeTransport(values.transportType)
 
   const fieldProps = (key: TextField) => ({
     value: values[key],
@@ -93,7 +95,12 @@ export default function RouteForm({
               </select>
             )}
           </FormField>
-          <FormField label="Transport type" required error={errorFor('transportType')}>
+          <FormField
+            label="Transport type"
+            required
+            error={errorFor('transportType')}
+            hint="Add one route per way of getting there. Travelers will only see the ones you add for this destination. Habal-habal and Motorcycle are the same ride: use Habal-habal for hilly places and Motorcycle in town."
+          >
             {(c) => (
               <select {...c} className="input" {...fieldProps('transportType')}>
                 <option value="">Select a transport type</option>
@@ -111,17 +118,27 @@ export default function RouteForm({
       <section className="form-card">
         <h2 className="form-card__title">Fare and Duration</h2>
         <div className="form-grid">
-          <FormField label="Estimated minimum fare (PHP)" required error={errorFor('fareMin')} hint="Per person, one way, from Poblacion.">
-            {(c) => <input {...c} className="input" type="text" inputMode="decimal" {...fieldProps('fareMin')} />}
-          </FormField>
-          <FormField
-            label="Estimated maximum fare (PHP)"
-            required
-            error={errorFor('fareMax')}
-            hint="Use the same amount if the fare is fixed."
-          >
-            {(c) => <input {...c} className="input" type="text" inputMode="decimal" {...fieldProps('fareMax')} />}
-          </FormField>
+          {free ? (
+            <div className="form-grid__full">
+              <div className="notice notice--info" role="status">
+                A personal car is free for the traveler, so there is no fare to enter. It will show as “Free”.
+              </div>
+            </div>
+          ) : (
+            <>
+              <FormField label="Estimated minimum fare (PHP)" required error={errorFor('fareMin')} hint="Per person, one way, from Poblacion.">
+                {(c) => <input {...c} className="input" type="text" inputMode="decimal" {...fieldProps('fareMin')} />}
+              </FormField>
+              <FormField
+                label="Estimated maximum fare (PHP)"
+                required
+                error={errorFor('fareMax')}
+                hint="Use the same amount if the fare is fixed."
+              >
+                {(c) => <input {...c} className="input" type="text" inputMode="decimal" {...fieldProps('fareMax')} />}
+              </FormField>
+            </>
+          )}
           <FormField label="Estimated travel time" required error={errorFor('duration')} hint="e.g. 25-40 minutes">
             {(c) => <input {...c} className="input" type="text" maxLength={60} {...fieldProps('duration')} />}
           </FormField>
