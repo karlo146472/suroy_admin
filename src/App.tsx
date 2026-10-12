@@ -10,6 +10,7 @@ import Destinations from './pages/Destinations'
 import EmailConfirmed from './pages/EmailConfirmed'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import ResetPassword from './pages/ResetPassword'
 import Settings from './pages/Settings'
 import SignOut from './pages/SignOut'
 import Transportation from './pages/Transportation'
@@ -25,6 +26,8 @@ export default function App() {
         <Route path="logout" element={<SignOut />} />
         {/* Public: where travelers land after tapping the link in the sign-up email of the mobile app. */}
         <Route path="email-confirmed" element={<EmailConfirmed />} />
+        {/* Public: where travelers choose a new password after tapping the link in the reset email. */}
+        <Route path="reset-password" element={<ResetPassword />} />
         {/* Everything below needs an active administrator; otherwise RequireAdmin redirects to /login. */}
         <Route element={<RequireAdmin />}>
         <Route element={<AdminLayout />}>

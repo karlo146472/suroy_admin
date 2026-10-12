@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js'
 import { useSyncExternalStore } from 'react'
+import { isPasswordResetPage } from '../lib/authLink'
 import { supabase } from '../lib/supabase'
 
 // The signed-in administrator, kept in sync with the Supabase Auth session. This only drives what the
@@ -79,6 +80,10 @@ async function syncFromSession(session: Session | null) {
 supabase.auth.onAuthStateChange((event, session) => {
   // A refreshed token is still the same person, so there is nothing to look up again.
   if (event === 'TOKEN_REFRESHED') return
+  // A traveler choosing a new password arrives with a temporary session that belongs to a traveler, not an
+  // administrator. This code would sign it out at once, and the password could not be changed. That page ends
+  // the session itself when it is done.
+  if (isPasswordResetPage(window.location.pathname)) return
   // Deferred because Supabase calls must not run inside this callback itself.
   setTimeout(() => void syncFromSession(session), 0)
 })

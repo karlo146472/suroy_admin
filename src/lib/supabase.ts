@@ -12,4 +12,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * row-level security: only a signed-in "Tourism Administrator" (see is_admin() in the database) can change data.
  * The browser keeps the session in localStorage, which is Supabase's default.
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  // Administrators sign in with a password, never from a link, so the client doesn't read sign-in links from the
+  // address. The traveler pages that open from an email link (src/pages/ResetPassword.tsx) read their own link.
+  auth: { detectSessionInUrl: false },
+})

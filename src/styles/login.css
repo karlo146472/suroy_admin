@@ -251,6 +251,13 @@
   margin: 0;
 }
 
+/* The new-password form inside the status card: full width, labels on the left. */
+.login .login__card--status .login__status-form {
+  width: 100%;
+  margin-top: var(--space-sm);
+  text-align: left;
+}
+
 /* Narrow screens: drop the brand panel and show a small brand line above the form */
 @media (max-width: 900px) {
   .login {

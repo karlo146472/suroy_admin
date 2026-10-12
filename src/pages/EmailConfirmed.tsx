@@ -1,18 +1,7 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import logo from '../assets/suroy-logo.png'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-
-/**
- * Supabase adds the problem to the link when a confirmation fails (for example "#error=access_denied&error_code=otp_expired"),
- * so the page can tell a success from an expired or already-used link.
- */
-function linkProblem(hash: string): string | null {
-  const params = new URLSearchParams(hash.replace(/^#/, ''))
-  if (!params.has('error') && !params.has('error_code')) return null
-  return params.get('error_code') === 'otp_expired'
-    ? 'This confirmation link has expired or was already used.'
-    : (params.get('error_description')?.replace(/\+/g, ' ') ?? 'This confirmation link could not be used.')
-}
+import { linkProblem } from '../lib/authLink'
 
 /**
  * The page travelers land on after tapping the link in the SUROY sign-up email. It is public (no administrator
